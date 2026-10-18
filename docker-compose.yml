@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      ENVIRONMENT: container
+      DATABASE_URL: sqlite:////data/careshield.db
+      SECRET_KEY: ${SECRET_KEY:-local-compose-secret-change-me}
+      FRONTEND_ORIGIN: http://localhost:8080
+      SEED_DEMO_DATA: "true"
+    volumes:
+      - careshield-data:/data
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+volumes:
+  careshield-data:
+
